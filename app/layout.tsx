@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import NavBar from "@/components/NavBar";
 import "./globals.css";
+import UsersProvider from "@/components/UsersProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,14 +26,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-neutral-950 text-white">
-        <NavBar
-          month={new Date().toLocaleString("en-US", { month: "short", year: "numeric" }).toUpperCase()}
-          people={[
-            { name: "Sienna", accent: "lime" },
-            { name: "Nikita", accent: "sky" },
-          ]}
-        />
-        {children}
+        <UsersProvider>
+          <NavBar
+            month={new Date()
+              .toLocaleString("en-US", { month: "short", year: "numeric" })
+              .toUpperCase()}
+          />
+          {children}
+        </UsersProvider>
       </body>
     </html>
   );
