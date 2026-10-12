@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useUsers } from "./UsersProvider";
+import { accents } from "@/lib/accents";
 
 const links = [
   { label: "Overview", href: "/" },
@@ -10,11 +11,6 @@ const links = [
   { label: "Upload CSV", href: "/upload" },
   { label: "Rules", href: "/rules" },
 ];
-
-const chipClass = {
-  lime: "border-lime-300/30 bg-lime-300/10 text-lime-300",
-  sky: "border-sky-300/30 bg-sky-300/10 text-sky-300",
-};
 
 const linkClass = "px-3 py-1.5 text-sm uppercase tracking-wider";
 const activeClass = "bg-lime-300 text-neutral-950";
@@ -42,7 +38,7 @@ export default function NavBar({ month }: NavBarProps) {
           {people.map((p) => (
             <span
               key={p.name}
-              className={`border px-2 py-0.5 font-mono text-xs ${chipClass[p.accent]}`}
+              className={`border px-2 py-0.5 font-mono text-xs ${accents[p.accent].tint}`}
             >
               {p.name}
             </span>

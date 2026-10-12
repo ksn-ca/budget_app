@@ -1,22 +1,13 @@
 "use client";
 import { useState } from "react";
+import { accents, type Accent } from "@/lib/accents";
+import ImportSummary from "./ImportSummary";
 
 type PersonalUploadProps = {
   name: string;
-  accent: keyof typeof dot;
+  accent: Accent;
 };
 
-const dot = { lime: "bg-lime-400", sky: "bg-sky-400" };
-const focusBorder = {
-  lime: "focus:border-lime-400",
-  sky: "focus:border-sky-400",
-};
-const textColor = { lime: "text-lime-400", sky: "text-sky-400" };
-const iconBox = {
-  lime: "bg-lime-400/10 border-lime-400/30 text-lime-400",
-  sky: "bg-sky-400/10 border-sky-400/30 text-sky-400",
-};
-const dragBorder = { lime: "border-lime-400", sky: "border-sky-400" };
 const banks = [
   { label: "Auto-detect", val: "auto" },
   { label: "Wealthsimple", val: "ws" },
@@ -41,7 +32,7 @@ export default function PersonalUploadCard({
   return (
     <div className="border border-neutral-800 bg-neutral-900 p-5 flex flex-col gap-4">
       <div className="flex items-center gap-2">
-        <span className={`size-2 ${dot[accent]}`} />
+        <span className={`size-2 ${accents[accent].bg}`} />
         <span className="font-semibold text-white">{name}</span>
       </div>
       <div className="relative">
@@ -57,7 +48,7 @@ export default function PersonalUploadCard({
         <select
           value={bank}
           onChange={(e) => setBank(e.target.value)}
-          className={`w-full appearance-none scheme-dark border border-neutral-800 bg-neutral-950 py-2.5 pl-10 pr-10 text-sm text-neutral-300 outline-none hover:border-neutral-700 ${focusBorder[accent]}`}
+          className={`w-full appearance-none scheme-dark border border-neutral-800 bg-neutral-950 py-2.5 pl-10 pr-10 text-sm text-neutral-300 outline-none hover:border-neutral-700 ${accents[accent].focusBorder}`}
         >
           {banks.map((b) => (
             <option key={b.val} value={b.val}>
@@ -87,7 +78,7 @@ export default function PersonalUploadCard({
           handleFile(e.dataTransfer.files[0]);
         }}
         className={`flex cursor-pointer flex-col items-center justify-center gap-1 border border-dashed bg-neutral-950/50 py-12 text-center hover:border-neutral-600 ${
-          dragging ? dragBorder[accent] : "border-neutral-700"
+          dragging ? accents[accent].border : "border-neutral-700"
         }`}
       >
         <input
@@ -100,7 +91,7 @@ export default function PersonalUploadCard({
           }}
         />
         <span
-          className={`mb-3 flex size-8 items-center justify-center border ${iconBox[accent]}`}
+          className={`mb-3 flex size-8 items-center justify-center border ${accents[accent].tint}`}
         >
           <svg
             className="size-4"
@@ -113,12 +104,20 @@ export default function PersonalUploadCard({
           </svg>
         </span>
         <p className="text-sm font-semibold text-white">
-          Drop CSV for <span className={textColor[accent]}>{name}</span>
+          Drop CSV for <span className={accents[accent].text}>{name}</span>
         </p>
         <p className="text-xs text-neutral-500">
           {bank === "auto" ? "Auto-detects columns" : `${bankLabel} format`}
         </p>
       </label>
+      {file && (
+        <ImportSummary
+          accent={accent}
+          filename={file?.name ? file.name : "None"}
+          numNeedCategory={2}
+          numTransactions={10}
+        />
+      )}
     </div>
   );
 }
