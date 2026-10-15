@@ -57,4 +57,4 @@ def list_users() -> list[User]:
 @app.post("/imports", status_code=201)
 async def upload_csv(file: UploadFile, bank: Annotated[str, Form()], person: Annotated[str, Form()]) -> ImportResult:
     await file.read()
-    return ImportResult(filename=file.filename, id=1, user=person, num_need_category=2, num_transactions=3 )
+    return ImportResult(filename=file.filename, id=1, user=person, num_need_category=4, num_transactions=3 )

@@ -8,6 +8,14 @@ type PersonalUploadProps = {
   accent: Accent;
 };
 
+type ImportResult = {
+  filename: string;
+  id: number;
+  user: string;
+  num_transactions: number;
+  num_need_category: number;
+};
+
 const banks = [
   { label: "Auto-detect", val: "auto" },
   { label: "Wealthsimple", val: "ws" },
@@ -16,17 +24,36 @@ const banks = [
   { label: "MNBA", val: "mnba" },
 ];
 
+const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL;
+if (!NEXT_PUBLIC_API_URL) {
+  throw new Error("NEXT_PUBLIC_API_URL is not set. Add it to .env.local");
+}
+
 export default function PersonalUploadCard({
   name,
   accent,
 }: PersonalUploadProps) {
   const [bank, setBank] = useState("auto");
   const [dragging, setDragging] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
   const bankLabel = banks.find((b) => b.val === bank)?.label;
+  const [fileResult, setFileResult] = useState<ImportResult | null>(null);
 
-  function handleFile(selected: File | undefined) {
-    if (selected) setFile(selected);
+  async function handleFile(selected: File | undefined) {
+    if (selected) {
+      const data = new FormData();
+      data.append("file", selected);
+      data.append("bank", bank);
+      data.append("person", name);
+      const res = await fetch(`${NEXT_PUBLIC_API_URL}/imports`, {
+        method: "POST",
+        body: data,
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to fetch file result: ${res.status}`);
+      } else {
+        setFileResult(await res.json());
+      }
+    }
   }
 
   return (
@@ -110,12 +137,16 @@ export default function PersonalUploadCard({
           {bank === "auto" ? "Auto-detects columns" : `${bankLabel} format`}
         </p>
       </label>
-      {file && (
+      {fileResult && (
         <ImportSummary
           accent={accent}
-          filename={file?.name ? file.name : "None"}
-          numNeedCategory={2}
-          numTransactions={10}
+          filename={fileResult?.filename ? fileResult.filename : "None"}
+          numNeedCategory={
+            fileResult?.num_need_category ? fileResult.num_need_category : 0
+          }
+          numTransactions={
+            fileResult?.num_transactions ? fileResult.num_transactions : 0
+          }
         />
       )}
     </div>
