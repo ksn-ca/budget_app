@@ -1,10 +1,11 @@
-from typing import Literal, Annotated
-from datetime import date, datetime
-from decimal import Decimal
+from typing import Annotated
 
 from fastapi import FastAPI, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+
+from models import User, ImportResult, Bank
+
+from parsers import PARSERS
 
 app = FastAPI()
 
@@ -15,28 +16,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-class User(BaseModel):
-    name: str
-    accent: Literal["lime", "sky"]
-    income: float
-    expenses: float
-
-class Transaction(BaseModel):
-    imported_date: datetime
-    transaction_date: date
-    user: str
-    description: str
-    amount: Decimal 
-    category: str | None = None
-    import_id: int
-
-class ImportResult(BaseModel):
-    filename: str
-    id: int
-    user: str
-    num_transactions: int
-    num_need_category: int
+banks: list[Bank] = [
+    Bank(label="Auto-detect", val="auto"),
+    Bank(label="Wealthsimple", val="ws"),
+    Bank(label="Rogers Bank", val="rogers"),
+    Bank(label="PC Financial", val="pcf"),
+    Bank(label="MNBA", val="mnba"),
+]
 
 
 users: list[User] = [

@@ -140,13 +140,9 @@ export default function PersonalUploadCard({
       {fileResult && (
         <ImportSummary
           accent={accent}
-          filename={fileResult?.filename ? fileResult.filename : "None"}
-          numNeedCategory={
-            fileResult?.num_need_category ? fileResult.num_need_category : 0
-          }
-          numTransactions={
-            fileResult?.num_transactions ? fileResult.num_transactions : 0
-          }
+          filename={fileResult.filename}
+          numNeedCategory={fileResult.num_need_category}
+          numTransactions={fileResult.num_transactions}
         />
       )}
     </div>
