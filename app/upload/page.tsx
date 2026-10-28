@@ -1,9 +1,15 @@
-"use client";
-import PersonalUploadCard from "@/components/PersonalUploadCard";
-import { useUsers } from "@/components/UsersProvider";
+import UploadView from "@/components/UploadView";
+import { Bank } from "@/lib/banks";
+import { connection } from "next/server";
+import { API_URL } from "@/lib/api";
 
-export default function Upload() {
-  const users = useUsers();
+export default async function Upload() {
+  await connection();
+  const res = await fetch(`${API_URL}/banks`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch banks: ${res.status}`);
+  }
+  const banks: Bank[] = await res.json();
   return (
     <main className="flex flex-col gap-5 mx-auto w-full max-w-6xl px-8 py-8">
       <div className="border border-neutral-800 bg-neutral-900 p-5 flex flex-col gap-4">
@@ -15,15 +21,7 @@ export default function Upload() {
           work).
         </p>
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        {users.map((user) => (
-          <PersonalUploadCard
-            key={user.name}
-            name={user.name}
-            accent={user.accent}
-          />
-        ))}
-      </div>
+      <UploadView banks={banks} />
       <div></div>
       <div></div>
     </main>

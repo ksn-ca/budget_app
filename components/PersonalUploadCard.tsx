@@ -2,27 +2,14 @@
 import { useState } from "react";
 import { accents, type Accent } from "@/lib/accents";
 import ImportSummary from "./ImportSummary";
+import { Bank } from "@/lib/banks";
+import { ImportResult } from "@/lib/import_results";
 
 type PersonalUploadProps = {
   name: string;
   accent: Accent;
+  banks: Bank[];
 };
-
-type ImportResult = {
-  filename: string;
-  id: number;
-  user: string;
-  num_transactions: number;
-  num_need_category: number;
-};
-
-const banks = [
-  { label: "Auto-detect", val: "auto" },
-  { label: "Wealthsimple", val: "ws" },
-  { label: "Rogers Bank", val: "rogers" },
-  { label: "PC Financial", val: "pcf" },
-  { label: "MNBA", val: "mnba" },
-];
 
 const NEXT_PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL;
 if (!NEXT_PUBLIC_API_URL) {
@@ -32,6 +19,7 @@ if (!NEXT_PUBLIC_API_URL) {
 export default function PersonalUploadCard({
   name,
   accent,
+  banks,
 }: PersonalUploadProps) {
   const [bank, setBank] = useState("auto");
   const [dragging, setDragging] = useState(false);

@@ -1,6 +1,6 @@
-from typing import Literal
 from datetime import date, datetime
 from decimal import Decimal
+from typing import Literal
 
 from pydantic import BaseModel
 
@@ -11,9 +11,11 @@ class User(BaseModel):
     income: float
     expenses: float
 
+
 class Bank(BaseModel):
     label: str
-    val: Literal["auto", "ws", "rogers", "pcf", "mnba"]
+    val: str
+
 
 class Transaction(BaseModel):
     imported_date: datetime
@@ -23,6 +25,7 @@ class Transaction(BaseModel):
     amount: Decimal
     category: str | None = None
     import_id: int
+
 
 class ImportResult(BaseModel):
     filename: str
