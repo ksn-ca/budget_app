@@ -1,11 +1,10 @@
 import { accents, type Accent } from "@/lib/accents";
-
-const currency = new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD" });
+import { formatMoney, type Money } from "@/lib/money";
 
 type PersonalCardProps = {
     name: string,
-    income: number,
-    expenses: number,
+    income: Money,
+    expenses: Money,
     percent: number,
     accent: Accent
 }
@@ -22,11 +21,11 @@ export default function PersonalCard(personalProps: PersonalCardProps) {
             <div className="mt-6 grid grid-cols-2 gap-4">
                 <div>
                     <div className="text-sm uppercase tracking-wider text-neutral-400">Income</div>
-                    <div className={`mt-1 font-mono text-2xl font-semibold ${accent.text}`}>{currency.format(personalProps.income)}</div>
+                    <div className={`mt-1 font-mono text-2xl font-semibold ${accent.text}`}>{formatMoney(personalProps.income)}</div>
                 </div>
                 <div>
                     <div className="text-sm uppercase tracking-wider text-neutral-400">Expenses</div>
-                    <div className="mt-1 font-mono text-2xl font-semibold text-white">{currency.format(personalProps.expenses)}</div>
+                    <div className="mt-1 font-mono text-2xl font-semibold text-white">{formatMoney(personalProps.expenses)}</div>
                 </div>
             </div>
             <div className="mt-6">

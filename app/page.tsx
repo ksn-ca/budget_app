@@ -9,9 +9,9 @@ export default function Dashboard() {
     <div>
       <main className="mx-auto w-full max-w-6xl px-8 py-8 space-y-6">
         <div className="grid grid-cols-3 gap-4 ">
-          <AmountCard title="Household Income" amount={2390.09} />
-          <AmountCard title="Household Expenses" amount={12000.09} />
-          <AmountCard title="Net Saved" amount={10000000.09} />
+          <AmountCard title="Household Income" amount="2390.09" />
+          <AmountCard title="Household Expenses" amount="12000.09" />
+          <AmountCard title="Net Saved" amount="10000000.09" />
         </div>
         <div className="grid grid-cols-2 gap-4">
           {users.map((user) => (
@@ -20,7 +20,7 @@ export default function Dashboard() {
               name={user.name}
               income={user.income}
               expenses={user.expenses}
-              percent={Math.round((user.expenses / user.income) * 100)}
+              percent={user.percent_spent}
               accent={user.accent}
             />
           ))}

@@ -46,3 +46,6 @@ __pycache__/
 
 # editor
 .vscode/
+
+# sample bank exports
+backend/sample/

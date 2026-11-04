@@ -1,9 +1,10 @@
+from decimal import Decimal
 from typing import Annotated
 
 from fastapi import FastAPI, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from models import Bank, ImportResult, User
-from parsers import PARSERS
+from parsers import PARSERS, ParserError
 
 app = FastAPI()
 
@@ -18,8 +19,8 @@ banks: list[Bank] = [Bank(val=val, label=bp.label) for val, bp in PARSERS.items(
 
 
 users: list[User] = [
-    User(name="Sienna", accent="lime", income=3000, expenses=2000),
-    User(name="Nikita", accent="sky", income=5000, expenses=1000),
+    User(name="Sienna", accent="lime", income=Decimal(3000), expenses=Decimal(2000)),
+    User(name="Nikita", accent="sky", income=Decimal(5000), expenses=Decimal(1000)),
 ]
 
 
@@ -49,11 +50,15 @@ async def upload_csv(
     raw = await file.read()
     decoded = raw.decode("utf-8-sig")
     temp_id: int = 1
-    transactions = PARSERS[bank].parse(decoded, person, temp_id)
+    try:
+        transactions = PARSERS[bank].parse(decoded, person, temp_id)
+    except ParserError as e:
+        raise HTTPException(status_code=400, detail=e.errors)
+    num_need_category: int = sum(1 for t in transactions if t.category_id is None)
     return ImportResult(
         filename=file.filename,
         id=temp_id,
         user=person,
-        num_need_category=4,
+        num_need_category=num_need_category,
         num_transactions=len(transactions),
     )
