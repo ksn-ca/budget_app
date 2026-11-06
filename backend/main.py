@@ -45,7 +45,7 @@ async def upload_csv(
     file: UploadFile, bank: Annotated[str, Form()], person: Annotated[str, Form()]
 ) -> ImportResult:
     if bank not in PARSERS:
-        raise HTTPException(status_code=400, detail=f"Unknown Bank: {bank}")
+        raise HTTPException(status_code=400, detail=[f"Unknown Bank: {bank}"])
 
     raw = await file.read()
     decoded = raw.decode("utf-8-sig")
@@ -53,7 +53,9 @@ async def upload_csv(
     try:
         transactions = PARSERS[bank].parse(decoded, person, temp_id)
     except ParserError as e:
-        raise HTTPException(status_code=400, detail=e.errors)
+        raise HTTPException(
+            status_code=400, detail=e.errors if e.errors else [str(e)]
+        ) from e
     num_need_category: int = sum(1 for t in transactions if t.category_id is None)
     return ImportResult(
         filename=file.filename,
