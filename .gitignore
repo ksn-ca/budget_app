@@ -49,3 +49,6 @@ __pycache__/
 
 # sample bank exports
 backend/sample/
+
+# personal notes
+notes/
