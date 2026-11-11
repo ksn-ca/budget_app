@@ -2,8 +2,9 @@
 import { useState } from "react";
 import { accents, type Accent } from "@/lib/accents";
 import ImportSummary from "./ImportSummary";
-import { Bank } from "@/lib/banks";
-import { ImportResult } from "@/lib/import_results";
+import type { Bank } from "@/lib/banks";
+import type { ImportResult } from "@/lib/import_results";
+import { useToast } from "./ToastProvider";
 
 type PersonalUploadProps = {
   name: string;
@@ -25,21 +26,39 @@ export default function PersonalUploadCard({
   const [dragging, setDragging] = useState(false);
   const bankLabel = banks.find((b) => b.val === bank)?.label;
   const [fileResult, setFileResult] = useState<ImportResult | null>(null);
+  const showToast = useToast();
 
   async function handleFile(selected: File | undefined) {
     if (selected) {
+      setFileResult(null);
       const data = new FormData();
       data.append("file", selected);
       data.append("bank", bank);
       data.append("person", name);
-      const res = await fetch(`${NEXT_PUBLIC_API_URL}/imports`, {
-        method: "POST",
-        body: data,
-      });
-      if (!res.ok) {
-        throw new Error(`Failed to fetch file result: ${res.status}`);
-      } else {
-        setFileResult(await res.json());
+      try {
+        const res = await fetch(`${NEXT_PUBLIC_API_URL}/imports`, {
+          method: "POST",
+          body: data,
+        });
+
+        if (!res.ok) {
+          const eRes = await res.json();
+          if (!Array.isArray(eRes.detail)) {
+            showToast([`Upload failed ${res.status}`], "error");
+
+            return;
+          }
+          const details = eRes.detail.map((d: string | { msg: string }) =>
+            typeof d === "string" ? d : d.msg,
+          );
+          showToast(details, "error");
+        } else {
+          const sRes: ImportResult = await res.json();
+          setFileResult(sRes);
+          showToast([`${sRes.num_transactions} imported`], "success");
+        }
+      } catch {
+        showToast(["Something went wrong"], "error");
       }
     }
   }

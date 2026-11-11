@@ -6,6 +6,7 @@ import UsersProvider from "@/components/UsersProvider";
 import { connection } from "next/server";
 import type { User } from "@/lib/users";
 import { API_URL } from "@/lib/api";
+import ToastProvider from "@/components/ToastProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,14 +37,16 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-neutral-950 text-white">
-        <UsersProvider users={users}>
-          <NavBar
-            month={new Date()
-              .toLocaleString("en-US", { month: "short", year: "numeric" })
-              .toUpperCase()}
-          />
-          {children}
-        </UsersProvider>
+        <ToastProvider>
+          <UsersProvider users={users}>
+            <NavBar
+              month={new Date()
+                .toLocaleString("en-US", { month: "short", year: "numeric" })
+                .toUpperCase()}
+            />
+            {children}
+          </UsersProvider>
+        </ToastProvider>
       </body>
     </html>
   );
