@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import FastAPI, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from models import Bank, ImportResult, User
+from models import Bank, ImportResult, Transaction, User
 from parsers import PARSERS, ParserError
 
 app = FastAPI()
@@ -23,6 +23,8 @@ users: list[User] = [
     User(name="Nikita", accent="sky", income=Decimal(5000), expenses=Decimal(1000)),
 ]
 
+imported_transactions: dict[int, list[Transaction]] = {}
+
 
 @app.get("/users")
 def list_users() -> list[User]:
@@ -38,6 +40,11 @@ def list_banks() -> list[Bank]:
 # def create_user(user: User) -> User:
 #     users.append(user)
 #     return user
+
+
+@app.get("/imports/{import_id}/transactions")
+def get_transactions_by_id(import_id: int) -> list[Transaction]:
+    return imported_transactions.get(import_id, [])
 
 
 @app.post("/imports", status_code=201)
@@ -57,6 +64,7 @@ async def upload_csv(
             status_code=400, detail=e.errors if e.errors else [str(e)]
         ) from e
     num_need_category: int = sum(1 for t in transactions if t.category_id is None)
+    imported_transactions[temp_id] = transactions
     return ImportResult(
         filename=file.filename,
         id=temp_id,

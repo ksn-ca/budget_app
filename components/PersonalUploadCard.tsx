@@ -150,6 +150,7 @@ export default function PersonalUploadCard({
           filename={fileResult.filename}
           numNeedCategory={fileResult.num_need_category}
           numTransactions={fileResult.num_transactions}
+          importId={fileResult.id}
         />
       )}
     </div>
