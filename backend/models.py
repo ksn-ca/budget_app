@@ -1,5 +1,6 @@
 from datetime import date, datetime
 from decimal import ROUND_HALF_UP, Decimal
+from enum import StrEnum
 from typing import Annotated, Literal
 
 from pydantic import AfterValidator, BaseModel, computed_field
@@ -33,15 +34,25 @@ class Bank(BaseModel):
     val: str
 
 
+class Kind(StrEnum):
+    PURCHASE = "purchase"
+    REFUND = "refund"
+    CASHBACK = "cashback"
+
+
 class Transaction(BaseModel):
     imported_date: datetime
     transaction_date: date
     user: str
-    description: str
+    merchant: str
     amount: Money
     category_id: int | None = None
     bank_category: str | None = None
     import_id: int
+    ignore: bool = False
+    bank: str
+    # kind: Kind
+    # status: str
 
 
 class ImportResult(BaseModel):
