@@ -1,0 +1,16 @@
+from collections.abc import Iterator
+from typing import Annotated
+
+from config import settings
+from fastapi import Depends
+from sqlmodel import Session, create_engine
+
+engine = create_engine(settings.database_url, echo=True, pool_pre_ping=True)
+
+
+def get_session() -> Iterator[Session]:
+    with Session(engine) as session:
+        yield session
+
+
+SessionDep = Annotated[Session, Depends(get_session)]
