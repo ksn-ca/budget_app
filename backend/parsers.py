@@ -112,7 +112,7 @@ def _parse_csv(
 
 @register("auto", "Auto-detect")
 def parse_auto(text: str, user: str, import_id: int) -> list[Transaction]:
-    raise NotImplementedError
+    raise ParserError("Auto-detect is not supported yet.")
 
 
 def _map_ws_row(row: dict[str, str]) -> dict[str, Any]:
@@ -167,9 +167,9 @@ def parse_rogers(text: str, user: str, import_id: int) -> list[Transaction]:
 
 @register("pcf", "PC Financial")
 def parse_pcf(text: str, user: str, import_id: int) -> list[Transaction]:
-    raise NotImplementedError
+    raise ParserError("Bank is not supported yet.")
 
 
 @register("mbna", "MBNA")
 def parse_mbna(text: str, user: str, import_id: int) -> list[Transaction]:
-    raise NotImplementedError
+    raise ParserError("Bank is not supported yet.")
