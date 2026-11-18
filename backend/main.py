@@ -1,10 +1,13 @@
 from decimal import Decimal
 from typing import Annotated
 
+from db import SessionDep
 from fastapi import FastAPI, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from models import Bank, ImportResult, Transaction, User
 from parsers import PARSERS, ParserError
+from sqlmodel import select
+from tables import BankRecord, UserRecord
 
 app = FastAPI()
 
@@ -48,13 +51,17 @@ def get_transactions_by_id(import_id: int) -> list[Transaction]:
 
 
 @app.post("/imports", status_code=201)
-async def upload_csv(
-    file: UploadFile, bank: Annotated[str, Form()], person: Annotated[str, Form()]
+def upload_csv(
+    session: SessionDep,
+    file: UploadFile,
+    bank: Annotated[str, Form()],
+    person: Annotated[str, Form()],
 ) -> ImportResult:
-    if bank not in PARSERS:
+    db_bank = session.exec(select(BankRecord).where(BankRecord.code == bank)).first()
+    if db_bank is None or db_bank.code not in PARSERS:
         raise HTTPException(status_code=400, detail=[f"Unknown Bank: {bank}"])
 
-    raw = await file.read()
+    raw = file.file.read()
     decoded = raw.decode("utf-8-sig")
     temp_id: int = 1
     try:
