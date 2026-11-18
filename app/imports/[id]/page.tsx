@@ -7,7 +7,7 @@ const headers = [
   { label: "Date", className: `text-left` },
   { label: "Merchant", className: `text-left ` },
   { label: "Category", className: `text-left ${SHRINK}` },
-  { label: "Amount", className: `text-right` },
+  { label: "Amount", className: `text-right ${SHRINK}` },
   { label: "Actions", className: `text-right ${SHRINK}` },
 ];
 
