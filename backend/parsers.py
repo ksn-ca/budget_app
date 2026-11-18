@@ -170,6 +170,6 @@ def parse_pcf(text: str, user: str, import_id: int) -> list[Transaction]:
     raise NotImplementedError
 
 
-@register("mnba", "MNBA")
-def parse_mnba(text: str, user: str, import_id: int) -> list[Transaction]:
+@register("mbna", "MBNA")
+def parse_mbna(text: str, user: str, import_id: int) -> list[Transaction]:
     raise NotImplementedError
