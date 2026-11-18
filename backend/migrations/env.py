@@ -1,5 +1,6 @@
 from logging.config import fileConfig
 
+import tables  # noqa: F401
 from alembic import context
 from config import settings
 from db import engine
