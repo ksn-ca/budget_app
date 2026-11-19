@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from models import Bank, ImportResult, Transaction, User
 from parsers import PARSERS, ParserError
 from sqlmodel import select
-from tables import BankRecord, UserRecord
+from tables import BankRecord, ImportRecord, TransactionRecord, UserRecord
 
 app = FastAPI()
 
@@ -61,20 +61,51 @@ def upload_csv(
     if db_bank is None or db_bank.code not in PARSERS:
         raise HTTPException(status_code=400, detail=[f"Unknown Bank: {bank}"])
 
-    raw = file.file.read()
-    decoded = raw.decode("utf-8-sig")
-    temp_id: int = 1
+    db_user = session.exec(select(UserRecord).where(UserRecord.name == person)).first()
+    if db_user is None:
+        raise HTTPException(status_code=400, detail=[f"Unknown User: {person}"])
+
+    if file.filename is None:
+        raise HTTPException(status_code=400, detail=["Invalid File"])
+
     try:
-        transactions = PARSERS[bank].parse(decoded, person, temp_id)
+        raw = file.file.read()
+        decoded = raw.decode("utf-8-sig")
+        transactions = PARSERS[bank].parse(
+            decoded, person, 1
+        )  # TODO placeholder, parsers drop import_id after 6c
     except ParserError as e:
         raise HTTPException(
             status_code=400, detail=e.errors if e.errors else [str(e)]
         ) from e
+    except UnicodeDecodeError as e:
+        raise HTTPException(status_code=400, detail=[str(e)]) from e
+
     num_need_category: int = sum(1 for t in transactions if t.category_id is None)
-    imported_transactions[temp_id] = transactions
+    import_record = ImportRecord(
+        filename=file.filename, user_id=db_user.id, bank_id=db_bank.id
+    )
+    session.add(import_record)
+    session.flush()
+    import_record_id = import_record.id
+    db_transactions = [
+        TransactionRecord(
+            transaction_date=t.transaction_date,
+            import_id=import_record_id,
+            merchant=t.merchant,
+            amount=t.amount,
+            bank_category=t.bank_category,
+            ignore=t.ignore,
+            category_id=None,  # TODO: replace with actual code once categorization is complete
+        )
+        for t in transactions
+    ]
+    session.add_all(db_transactions)
+    session.commit()
+    imported_transactions[import_record_id] = transactions
     return ImportResult(
         filename=file.filename,
-        id=temp_id,
+        id=import_record_id,
         user=person,
         num_need_category=num_need_category,
         num_transactions=len(transactions),
