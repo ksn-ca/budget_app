@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from decimal import Decimal
 from typing import Annotated
 
@@ -26,8 +27,6 @@ users: list[User] = [
     User(name="Nikita", accent="sky", income=Decimal(5000), expenses=Decimal(1000)),
 ]
 
-imported_transactions: dict[int, list[Transaction]] = {}
-
 
 @app.get("/users")
 def list_users() -> list[User]:
@@ -46,8 +45,47 @@ def list_banks() -> list[Bank]:
 
 
 @app.get("/imports/{import_id}/transactions")
-def get_transactions_by_id(import_id: int) -> list[Transaction]:
-    return imported_transactions.get(import_id, [])
+def get_transactions_by_id(import_id: int, session: SessionDep) -> list[Transaction]:
+    import_record = session.get(ImportRecord, import_id)
+    if import_record is None:
+        raise HTTPException(status_code=404, detail=["Import not found."])
+
+    user = session.get(UserRecord, import_record.user_id)
+    bank = session.get(BankRecord, import_record.bank_id)
+    if user is None:
+        raise HTTPException(
+            status_code=500,
+            detail=["Please contact your local support admin. User is None."],
+        )
+    if bank is None:
+        raise HTTPException(
+            status_code=500,
+            detail=["Please contact your local support admin. Bank is None."],
+        )
+
+    transaction_record: Sequence[TransactionRecord] = session.exec(
+        select(TransactionRecord)
+        .where(TransactionRecord.import_id == import_id)
+        .order_by(TransactionRecord.transaction_date)
+    ).all()
+
+    transactions = [
+        Transaction(
+            imported_date=import_record.created_at,
+            transaction_date=t.transaction_date,
+            id=t.id,
+            user=user.name,
+            merchant=t.merchant,
+            amount=t.amount,
+            category_id=t.category_id,
+            bank_category=t.bank_category,
+            ignore=t.ignore,
+            bank=bank.code,
+        )
+        for t in transaction_record
+    ]
+
+    return transactions
 
 
 @app.post("/imports", status_code=201)
@@ -71,17 +109,16 @@ def upload_csv(
     try:
         raw = file.file.read()
         decoded = raw.decode("utf-8-sig")
-        transactions = PARSERS[bank].parse(
-            decoded, person, 1
-        )  # TODO placeholder, parsers drop import_id after 6c
+        transactions = PARSERS[db_bank.code].parse(decoded)
     except ParserError as e:
         raise HTTPException(
             status_code=400, detail=e.errors if e.errors else [str(e)]
         ) from e
     except UnicodeDecodeError as e:
-        raise HTTPException(status_code=400, detail=[str(e)]) from e
+        raise HTTPException(
+            status_code=400, detail=["File must be UTF-8 encoded"]
+        ) from e
 
-    num_need_category: int = sum(1 for t in transactions if t.category_id is None)
     import_record = ImportRecord(
         filename=file.filename, user_id=db_user.id, bank_id=db_bank.id
     )
@@ -102,11 +139,10 @@ def upload_csv(
     ]
     session.add_all(db_transactions)
     session.commit()
-    imported_transactions[import_record_id] = transactions
     return ImportResult(
         filename=file.filename,
         id=import_record_id,
         user=person,
-        num_need_category=num_need_category,
+        num_need_category=len(transactions),  # TODO when categorization is done
         num_transactions=len(transactions),
     )

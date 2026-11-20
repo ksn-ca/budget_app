@@ -1,13 +1,13 @@
 import csv
 from collections.abc import Callable
-from datetime import date, datetime
+from datetime import date
 from decimal import Decimal, InvalidOperation
 from io import StringIO
 from typing import Any, NamedTuple
 
-from models import Transaction
+from models import ParsedTransaction
 
-ParseFn = Callable[[str, str, int], list[Transaction]]
+ParseFn = Callable[[str], list[ParsedTransaction]]
 RowMapper = Callable[[dict[str, str]], dict[str, Any]]
 
 WS_COLUMNS = {
@@ -59,13 +59,10 @@ def register(val: str, label: str):
 
 def _parse_csv(
     text: str,
-    user: str,
-    import_id: int,
     *,
-    bank: str,
     required_columns: set[str],
     map_row: RowMapper,
-) -> list[Transaction]:
+) -> list[ParsedTransaction]:
     reader = csv.DictReader(StringIO(text))
 
     if reader.fieldnames is None:
@@ -76,9 +73,7 @@ def _parse_csv(
         raise ParserError(
             f"Required columns are not present: {', '.join(sorted(missing))}"
         )
-
-    imported_at = datetime.now()
-    transactions: list[Transaction] = []
+    transactions: list[ParsedTransaction] = []
     errors: list[str] = []
     for row in reader:
         if None in row.values():
@@ -90,15 +85,7 @@ def _parse_csv(
             )
             continue
         try:
-            transactions.append(
-                Transaction(
-                    imported_date=imported_at,
-                    user=user,
-                    import_id=import_id,
-                    bank=bank,
-                    **map_row(row),
-                )
-            )
+            transactions.append(ParsedTransaction(**map_row(row)))
         except ValueError as e:
             errors.append(f"Line {reader.line_num}: {e}")
         except InvalidOperation:
@@ -111,7 +98,7 @@ def _parse_csv(
 
 
 @register("auto", "Auto-detect")
-def parse_auto(text: str, user: str, import_id: int) -> list[Transaction]:
+def parse_auto(text: str) -> list[ParsedTransaction]:
     raise ParserError("Auto-detect is not supported yet.")
 
 
@@ -142,34 +129,28 @@ def _map_rogers_row(row: dict[str, str]) -> dict[str, Any]:
 
 
 @register("ws", "Wealthsimple")
-def parse_ws(text: str, user: str, import_id: int) -> list[Transaction]:
+def parse_ws(text: str) -> list[ParsedTransaction]:
     return _parse_csv(
         text,
-        user,
-        import_id,
-        bank="ws",
         required_columns=WS_COLUMNS,
         map_row=_map_ws_row,
     )
 
 
 @register("rogers", "Rogers Bank")
-def parse_rogers(text: str, user: str, import_id: int) -> list[Transaction]:
+def parse_rogers(text: str) -> list[ParsedTransaction]:
     return _parse_csv(
         text,
-        user,
-        import_id,
-        bank="rogers",
         required_columns=ROGERS_COLUMNS,
         map_row=_map_rogers_row,
     )
 
 
 @register("pcf", "PC Financial")
-def parse_pcf(text: str, user: str, import_id: int) -> list[Transaction]:
+def parse_pcf(text: str) -> list[ParsedTransaction]:
     raise ParserError("Bank is not supported yet.")
 
 
 @register("mbna", "MBNA")
-def parse_mbna(text: str, user: str, import_id: int) -> list[Transaction]:
+def parse_mbna(text: str) -> list[ParsedTransaction]:
     raise ParserError("Bank is not supported yet.")

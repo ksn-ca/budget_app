@@ -1,5 +1,6 @@
 import { API_URL } from "@/lib/api";
-import { Transaction } from "@/lib/transactions";
+import type { Transaction } from "@/lib/transactions";
+import { notFound } from "next/navigation";
 
 const SHRINK = "w-px whitespace-nowrap";
 
@@ -20,7 +21,15 @@ export default async function Import({
   const res = await fetch(`${API_URL}/imports/${id}/transactions`, {
     cache: "no-store",
   });
+
+  if (res.status === 404) {
+    notFound();
+  }
+  if (!res.ok) {
+    throw new Error(`Failed to import ${id} with status ${res.status}`);
+  }
   const transactions: Transaction[] = await res.json();
+
   return (
     <main className="max-w-5xl mx-auto w-full px-8 py-8">
       <table className="border border-neutral-800 bg-neutral-900 w-full border-collapse">
@@ -38,9 +47,12 @@ export default async function Import({
           </tr>
         </thead>
         <tbody>
-          {transactions.map((t, id) => {
+          {transactions.map((t) => {
             return (
-              <tr key={id} className="border-t border-neutral-80">
+              <tr
+                key={t.id}
+                className="border-t border-neutral-800"
+              >
                 <td className="whitespace-nowrap">{t.transaction_date}</td>
                 <td>{t.merchant}</td>
                 <td className="whitespace-nowrap">{t.bank_category}</td>

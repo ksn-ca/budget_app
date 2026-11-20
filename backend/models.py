@@ -40,19 +40,22 @@ class Kind(StrEnum):
     CASHBACK = "cashback"
 
 
-class Transaction(BaseModel):
-    imported_date: datetime
+class ParsedTransaction(BaseModel):
     transaction_date: date
-    user: str
     merchant: str
     amount: Money
-    category_id: int | None = None
     bank_category: str | None = None
-    import_id: int
     ignore: bool = False
-    bank: str
     # kind: Kind
     # status: str
+
+
+class Transaction(ParsedTransaction):
+    id: int
+    imported_date: datetime
+    user: str
+    bank: str
+    category_id: int | None = None
 
 
 class ImportResult(BaseModel):
