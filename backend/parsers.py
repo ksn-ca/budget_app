@@ -38,7 +38,7 @@ class ParserError(ValueError):
 
 
 class BankParser(NamedTuple):
-    label: str
+    name: str
     parse: ParseFn
 
 
@@ -49,9 +49,9 @@ def _parse_money(amt: str) -> Decimal:
     return Decimal(amt.replace("$", "").replace(",", "").strip())
 
 
-def register(val: str, label: str):
+def register(code: str, name: str):
     def decorator(func: ParseFn) -> ParseFn:
-        PARSERS[val] = BankParser(label, func)
+        PARSERS[code] = BankParser(name, func)
         return func
 
     return decorator

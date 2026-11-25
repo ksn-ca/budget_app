@@ -19,7 +19,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-banks: list[Bank] = [Bank(val=val, label=bp.label) for val, bp in PARSERS.items()]
+banks: list[Bank] = [Bank(name=bp.name, code=code) for code, bp in PARSERS.items()]
 
 
 users: list[User] = [

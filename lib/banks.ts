@@ -1,4 +1,4 @@
 export type Bank = {
-  label: string;
-  val: string;
+  name: string;
+  code: string;
 };

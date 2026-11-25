@@ -24,7 +24,7 @@ export default function PersonalUploadCard({
 }: PersonalUploadProps) {
   const [bank, setBank] = useState("auto");
   const [dragging, setDragging] = useState(false);
-  const bankLabel = banks.find((b) => b.val === bank)?.label;
+  const bankName = banks.find((b) => b.code === bank)?.name;
   const [fileResult, setFileResult] = useState<ImportResult | null>(null);
   const showToast = useToast();
 
@@ -85,8 +85,8 @@ export default function PersonalUploadCard({
           className={`w-full appearance-none scheme-dark border border-neutral-800 bg-neutral-950 py-2.5 pl-10 pr-10 text-sm text-neutral-300 outline-none hover:border-neutral-700 ${accents[accent].focusBorder}`}
         >
           {banks.map((b) => (
-            <option key={b.val} value={b.val}>
-              {b.label}
+            <option key={b.code} value={b.code}>
+              {b.name}
             </option>
           ))}
         </select>
@@ -141,7 +141,7 @@ export default function PersonalUploadCard({
           Drop CSV for <span className={accents[accent].text}>{name}</span>
         </p>
         <p className="text-xs text-neutral-500">
-          {bank === "auto" ? "Auto-detects columns" : `${bankLabel} format`}
+          {bank === "auto" ? "Auto-detects columns" : `${bankName} format`}
         </p>
       </label>
       {fileResult && (

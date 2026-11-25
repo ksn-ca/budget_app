@@ -30,8 +30,8 @@ class User(BaseModel):
 
 
 class Bank(BaseModel):
-    label: str
-    val: str
+    name: str
+    code: str
 
 
 class Kind(StrEnum):
