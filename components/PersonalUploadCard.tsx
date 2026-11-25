@@ -22,7 +22,7 @@ export default function PersonalUploadCard({
   accent,
   banks,
 }: PersonalUploadProps) {
-  const [bank, setBank] = useState("auto");
+  const [bank, setBank] = useState(banks[0]?.code ?? "");
   const [dragging, setDragging] = useState(false);
   const bankName = banks.find((b) => b.code === bank)?.name;
   const [fileResult, setFileResult] = useState<ImportResult | null>(null);
@@ -140,9 +140,7 @@ export default function PersonalUploadCard({
         <p className="text-sm font-semibold text-white">
           Drop CSV for <span className={accents[accent].text}>{name}</span>
         </p>
-        <p className="text-xs text-neutral-500">
-          {bank === "auto" ? "Auto-detects columns" : `${bankName} format`}
-        </p>
+        <p className="text-xs text-neutral-500">{bankName} format</p>
       </label>
       {fileResult && (
         <ImportSummary

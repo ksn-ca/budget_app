@@ -3,7 +3,7 @@ from decimal import ROUND_HALF_UP, Decimal
 from enum import StrEnum
 from typing import Annotated, Literal
 
-from pydantic import AfterValidator, BaseModel, computed_field
+from pydantic import AfterValidator, BaseModel, ConfigDict, computed_field
 
 CENTS = Decimal("0.01")
 
@@ -30,6 +30,7 @@ class User(BaseModel):
 
 
 class Bank(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     name: str
     code: str
 

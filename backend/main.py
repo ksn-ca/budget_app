@@ -19,9 +19,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-banks: list[Bank] = [Bank(name=bp.name, code=code) for code, bp in PARSERS.items()]
-
-
 users: list[User] = [
     User(name="Sienna", accent="lime", income=Decimal(3000), expenses=Decimal(2000)),
     User(name="Nikita", accent="sky", income=Decimal(5000), expenses=Decimal(1000)),
@@ -34,7 +31,9 @@ def list_users() -> list[User]:
 
 
 @app.get("/banks")
-def list_banks() -> list[Bank]:
+def list_banks(session: SessionDep) -> list[Bank]:
+    bank_records = session.exec(select(BankRecord).order_by(BankRecord.id)).all()
+    banks = [Bank.model_validate(rec) for rec in bank_records]
     return banks
 
 

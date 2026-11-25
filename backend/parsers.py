@@ -97,11 +97,6 @@ def _parse_csv(
     return transactions
 
 
-@register("auto", "Auto-detect")
-def parse_auto(text: str) -> list[ParsedTransaction]:
-    raise ParserError("Auto-detect is not supported yet.")
-
-
 def _map_ws_row(row: dict[str, str]) -> dict[str, Any]:
     return {
         "transaction_date": date.fromisoformat(row["transaction_date"]),
